@@ -14,4 +14,3 @@ test1='神圣的'
 
 test3='信誉；学分'
 print(test3.replace(',','!').replace('；',','))
-
