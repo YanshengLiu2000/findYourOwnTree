@@ -3,6 +3,7 @@ import os
 import re
 
 import xlrd
+import test01
 # import xlwt
 
 
@@ -50,36 +51,58 @@ def record_ground_truth(path):
 
 def check_answer(student_answer,book):
     total=0
-    wrong=0
+    result={}
+    result['empty']=[]
+    result['wrong_words']=[]
     print('row,      word,    student_answer,   groundTruth')
 
-    # for word in student_answer:
-    #     total+=1
-    #     # if student_answer[word][0] not in book[word]:
-    #     if not check_match(student_answer[word][0],book[word]):
-    #         wrong+=1
-    #         print(total,word,student_answer[word], book[word],wrong)
     for word in student_answer:
+        # print('TEST: check word :', word)
         total+=1
         correct_flag=0#if correct correct_flag==1 else 0
-        for meaning in student_answer[word] :
+        for meaning in student_answer[word] :#in case of student type in more meanings of one word
+            #CAUTION! replace '的，得，地'may cause meaning errors! but correct rate may increase!
+            if not meaning:
+                result['empty'].append(word)
+                break
             if check_match(meaning,book[word]):
                 correct_flag=1
                 break
-        if not correct_flag:
-            wrong+=1
+        if not correct_flag and student_answer[word][0]!='':
+            result['wrong_words'].append((total,word))
             print(total,word,student_answer[word], book[word])
 
-    print('wrong#:',wrong)
+
     print('total#:',total)
+    result['total_num']=total
+    print('wrongWord#',len(result['wrong_words'])+len(result['empty']))
+    print('=================test========================')
+    res_wrong_words=[]
+    for word in result['wrong_words']:
+        # print(word) word is a tuple(#, word)
+        online_meaning=test01.getAllMeanings(word[1])
+        for student_meaning in student_answer[word[1]]:
+            if not check_match(student_meaning,online_meaning):
+                res_wrong_words.append((word[1],student_answer[word[1]]))
+    print(res_wrong_words)
+    print(len(res_wrong_words))
+
+
+    return result
 
 def check_match(student,book_list):
     if not student:
         return False
+    print('test',student,book_list)
+    student=student.strip('的').strip('得').strip('地')
     for answer in book_list:
         if re.search(student,answer) or re.search(answer,student):
             return True
     return False
+
+def get_online_meanings(word):
+    return test01.getAllMeanings(word)
+
 
 if __name__ == '__main__':
     case_00_path='.\\101-200词测(3).xlsx'
@@ -91,13 +114,13 @@ if __name__ == '__main__':
             break
     case_00=read_sheet(case_00_path)
 
-    check_answer(case_00,ground_truth_dict)
+    result=check_answer(case_00,ground_truth_dict)
+    print('empty: ',result['empty'])
+
+    # for word in result['wrong_words']:
+    #     print(word,case_00[word[1]],ground_truth_dict[word[1]])
     print('================test=================')
-    print(case_00)
-    # print("TEST==============================")
-    # print(case_00['ensconce'])
-    # print(check_match('ensconce',ground_truth_dict['ensconce']))
-    # print(ground_truth_dict['ensconce'])
+    # test=check_online(result['wrong_words'])
 
 
 
