@@ -1,2 +1,0 @@
-APP_KEY = '198fbb5dfad96f73'
-APP_SECRET = 'dsjzTlX1zPUtUmEirX2wz4XT58JOQDMB'
